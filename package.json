@@ -1,0 +1,27 @@
+{
+  "name": "minecraft-qoi",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "clean": "rm -rf dist",
+    "bundle": "vite build -c ./vite.config.mts",
+    "emit-declarations": "tsup --config ./tsup.config.ts",
+    "build": "pnpm clean && pnpm bundle && pnpm emit-declarations",
+    "start": "pnpm build && node ./dist/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.14.7",
+    "eslint": "^9.5.0",
+    "tsup": "^8.1.0",
+    "typescript": "^5.5.2",
+    "vite": "^5.3.1",
+    "vite-plugin-babel": "^1.2.0"
+  },
+  "dependencies": {
+    "@grakkit/stdlib-paper": "^1.0.14"
+  }
+}
