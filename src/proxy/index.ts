@@ -34,7 +34,9 @@ const schema = z.object({
 });
 
 app.get("/", zValidator("query", schema), async (c) => {
-  if (messages.length > MAX_MESSAGES) messages = [];
+  if (messages.length > MAX_MESSAGES) {
+    messages = messages.slice(Math.max(messages.length - MAX_MESSAGES, 1));
+  }
 
   const { question, user } = c.req.valid("query");
   const decodedQuestion = Buffer.from(question, "base64").toString();
