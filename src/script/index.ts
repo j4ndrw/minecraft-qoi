@@ -12,7 +12,7 @@ let payloads: Payload[] = [];
 function broadcastMessage(message: string) {
   for (const player of Bukkit.getOnlinePlayers()) {
     // @ts-ignore
-    player.sendMessage(message)
+    player.sendMessage(message);
   }
 }
 
@@ -25,7 +25,9 @@ function qoiAsk() {
       new JavaString(payload.question).getBytes(),
     );
     const response = core.fetch(
-      `http://localhost:42068?question=${base64EncodedQuestion}&user=${payload.id}`,
+      new JavaString(
+        `http://localhost:42068?question=${base64EncodedQuestion}&user=${payload.id}`,
+      ).toString(),
     );
     const answer = response.read();
     broadcastMessage(`[Qoi's answer to ${payload.id}] ${answer}`);
@@ -34,6 +36,7 @@ function qoiAsk() {
       // @ts-ignore
       `[Qoi's answer to ${payload.id}] Bro something went wrong, sorries... ${e.message}`,
     );
+    console.error(e);
   }
 }
 

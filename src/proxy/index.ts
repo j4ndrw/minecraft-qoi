@@ -25,14 +25,15 @@ const schema = z.object({
 });
 
 app.get("/", zValidator("query", schema), async (c) => {
+  if (messages.length > MAX_MESSAGES) messages = [];
+
   const { question, user } = c.req.valid("query");
   const decodedQuestion = Buffer.from(question, "base64").toString();
 
-  pushMessage({ role: "user", content: decodedQuestion });
   pushMessage({ role: "system", content: systemPrompt(user) });
+  pushMessage({ role: "user", content: decodedQuestion });
 
   const { message } = await llm.chat({
-    stream: false,
     model,
     messages,
   });
@@ -42,9 +43,6 @@ app.get("/", zValidator("query", schema), async (c) => {
 });
 
 console.log("Listening to port 42068 hehe");
-
-const FIVE_MINUTES_IN_MS = 5 * 60 * 1000;
-setInterval(() => (messages = []), FIVE_MINUTES_IN_MS);
 
 serve({
   fetch: app.fetch,
