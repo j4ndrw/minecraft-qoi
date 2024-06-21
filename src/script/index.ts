@@ -25,7 +25,7 @@ function qoiAsk() {
       new JavaString(payload.question).getBytes(),
     );
     const response = core.fetch(
-      `http://localhost:42068?question=${base64EncodedQuestion}`,
+      `http://localhost:42068?question=${base64EncodedQuestion}&user=${payload.id}`,
     );
     const answer = response.read();
     broadcastMessage(`[Qoi's answer to ${payload.id}] ${answer}`);
