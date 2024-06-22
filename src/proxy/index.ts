@@ -4,7 +4,10 @@ import { serve } from "@hono/node-server";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 
+const DEFAULT_MODEL = "llama3";
 const MAX_MESSAGES = 100;
+
+let model = DEFAULT_MODEL;
 let messages: Message[] = [];
 
 const systemPrompts = new Map<string, string>();
@@ -17,7 +20,6 @@ const pushMessage = (message: Message) => {
 const app = new Hono();
 
 const llm = new Ollama({ host: "http://localhost:11434" });
-const model = "llama3";
 const systemPrompt = (user: string) =>
   `
 You are a Minecraft expert, responsible with helping players on the server
@@ -28,12 +30,12 @@ For reference, the user interacting with you directly is called '${user}'.
 Try to answer in using 3 paragraphs maximum and make them concise.
 `;
 
-const schema = z.object({
+const askSchema = z.object({
   question: z.string(),
   user: z.string(),
 });
 
-app.get("/", zValidator("query", schema), async (c) => {
+app.get("/ask", zValidator("query", askSchema), async (c) => {
   if (messages.length > MAX_MESSAGES) {
     messages = messages.slice(Math.max(messages.length - MAX_MESSAGES, 1));
   }
@@ -54,6 +56,34 @@ app.get("/", zValidator("query", schema), async (c) => {
 
   pushMessage(message);
   return c.text(message.content);
+});
+
+const setModelSchema = z.object({ model: z.string() });
+
+app.get("/set-model", zValidator("query", setModelSchema), async (c) => {
+  if (messages.length > MAX_MESSAGES) {
+    messages = messages.slice(Math.max(messages.length - MAX_MESSAGES, 1));
+  }
+
+  const { model: modelToSet } = c.req.valid("query");
+  const { models } = await llm.list();
+
+  if (!models.find((m) => m.name === modelToSet)) {
+    return c.json({ status: "failure" });
+  }
+  model = modelToSet;
+
+  return c.json({ status: "success" });
+});
+
+app.get("/new-chat", async (c) => {
+  messages = [];
+  return c.json({});
+});
+
+app.get("/get-models", async (c) => {
+  const { models } = await llm.list();
+  return c.json({ models: models.map(({ name }) => name) });
 });
 
 console.log("Listening to port 42068 hehe");
